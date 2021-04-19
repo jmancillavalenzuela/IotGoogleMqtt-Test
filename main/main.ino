@@ -10,15 +10,16 @@ void setup() {
 unsigned long lastMillis = 0;
 void loop() {
   mqtt->loop();
-  delay(10);  // <- fixes some issues with WiFi stability
+  delay(10000);  // <- fixes some issues with WiFi stability
 
   if (!mqttClient->connected()) {
     connect();
-  }
+    }
 
   // publish a message roughly every second.
   if (millis() - lastMillis > 1000) {
     lastMillis = millis();
+    pushData(1,2,3);
     Serial.println("datos enviados");
   }
 }
