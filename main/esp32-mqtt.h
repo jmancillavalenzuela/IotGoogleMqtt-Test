@@ -42,13 +42,20 @@ String getDeviceState() {
   StaticJsonDocument<capacity> edin_json_config_doc;
   // create an object
   JsonObject object = edin_json_config_doc.to<JsonObject>();
-
-  char buf[16];
-  sprintf(buf, "IP:%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
-  Serial.println(String(buf));
-  object["chipID"]         = chipId ;
-  object["IpNodo"]         = String (buf);
-  object["State"]          = "ON";
+  object["_id"]         = chipId ;
+  object["device_name"]         = "HSC001";
+  object["temp_shower"]          = "35.4";
+  object["temp_hot_shower"]          = "15.4";
+  object["temp_out_shower"]          = "15.4";
+  object["temp_pump"]          = "35.4";
+  object["flux_hot_pump"]          = "15.4";
+  object["flux_out_pump"]          = "15.4";
+  object["flux_pump"]          = "15.4";
+  object["battery_shower"]          = "35.4";
+  object["state_shower"]          = "35.4";
+  object["state_pump"]          = "35.4";
+  object["latitude"]          = "35.4";
+  object["longitude"]          = "35.4";
 
   String output;
   serializeJson(object, output);                                                                  //SAve CPU cycles by calculatinf the size.
@@ -107,20 +114,58 @@ bool publishTelemetry(String subfolder, const char *data, int length) {
   return mqtt->publishTelemetry(subfolder, data, length);
 }
 
-void pushData(int temperature, int waterSave, int waterUse) {
-  Serial.println("Iniciando Push de Datos: ");
+void pushData() {
   DynamicJsonDocument data(198);
-  //    data["temperature"] = String(temperature);
-  //    data["waterUse"] = String(waterUse);
-  //    data["waterSave"] = String(waterSave);
-  data["data"] = String(waterSave);
-  String json_str;
-  Serial.println(json_str);
-  serializeJsonPretty(data, json_str);
-  Serial.println("JsonData Created.");
-  publishTelemetry("/iotcore-topic", json_str);
-  Serial.println("Mensaje Publicado.");
-  Serial.println(" :Fin Push de Datos");
+  uint32_t chipId = 0;
+  for (int i = 0; i < 17; i = i + 8) {
+    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+  data["_id"]         = chipId ;
+  data["device_name"]         = "HSC001";
+  data["temp_shower"]          = "35.4";
+  data["temp_hot_shower"]          = "15.4";
+  data["temp_out_shower"]          = "15.4";
+  data["temp_pump"]          = "35.4";
+  data["flux_hot_pump"]          = "15.4";
+  data["flux_out_pump"]          = "15.4";
+  data["flux_pump"]          = "15.4";
+  data["battery_shower"]          = "35.4";
+  data["state_shower"]          = "35.4";
+  data["state_pump"]          = "35.4";
+  data["latitude"]          = "35.4";
+  data["longitude"]          = "35.4";
+  String json_object;
+  Serial.println(json_object);
+  serializeJsonPretty(data, json_object);
+  publishTelemetry("/iotcore-topic", json_object);
+  Serial.println("Datos Pusheados");
+}
+
+void pushData(double temp_shower, double temp_hot_shower, double temp_out_shower, double temp_pump, double flux_hot_pump, double flux_out_pump, double flux_pump, double battery_shower, double state_shower, double pump_shower, double latitude, double longitude) {
+  DynamicJsonDocument data(198);
+    uint32_t chipId = 0;
+  for (int i = 0; i < 17; i = i + 8) {
+    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+  data["_id"]         = chipId ;
+  data["device_name"]         = "HSC001";
+  data["temp_shower"]          = temp_shower;
+  data["temp_hot_shower"]          = "15.4";
+  data["temp_out_shower"]          = "15.4";
+  data["temp_pump"]          = "35.4";
+  data["flux_hot_pump"]          = "15.4";
+  data["flux_out_pump"]          = "15.4";
+  data["flux_pump"]          = "15.4";
+  data["battery_shower"]          = "35.4";
+  data["state_shower"]          = "35.4";
+  data["state_pump"]          = "35.4";
+  data["latitude"]          = "35.4";
+  data["longitude"]          = "35.4";
+  String json_object;
+  Serial.println(json_object);
+  serializeJsonPretty(data, json_object);
+  publishTelemetry("/iotcore-topic", json_object);
+  Serial.println("Datos Pusheados");
 }
 bool publishState(String data) {
   return mqtt->publishState(data);
@@ -131,17 +176,17 @@ void connect() {
   mqtt->mqttConnect();
 }
 
-void setupCloudIoT(){
+void setupCloudIoT() {
   device = new CloudIoTCoreDevice(
-      project_id, location, registry_id, device_id,
-      private_key_str);
-    setupWifi();
-    netClient = new WiFiClientSecure();
-    netClient->setCACert(root_cert);
-    mqttClient = new MQTTClient(512);
-    mqttClient->setOptions(180, true, 1000); // keepAlive, cleanSession, timeout
-    mqtt = new CloudIoTCoreMqtt(mqttClient, netClient, device);
-    //mqtt->setLogConnect(true);
-    mqtt->setUseLts(true);
-    mqtt->startMQTT();
+    project_id, location, registry_id, device_id,
+    private_key_str);
+  setupWifi();
+  netClient = new WiFiClientSecure();
+  netClient->setCACert(root_cert);
+  mqttClient = new MQTTClient(512);
+  mqttClient->setOptions(180, true, 1000); // keepAlive, cleanSession, timeout
+  mqtt = new CloudIoTCoreMqtt(mqttClient, netClient, device);
+  //mqtt->setLogConnect(true);
+  mqtt->setUseLts(true);
+  mqtt->startMQTT();
 }
