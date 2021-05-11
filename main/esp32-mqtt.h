@@ -141,31 +141,33 @@ void pushData() {
   Serial.println("Datos Pusheados");
 }
 
-void pushData(double temp_shower, double temp_hot_shower, double temp_out_shower, double temp_pump, double flux_hot_pump, double flux_out_pump, double flux_pump, double battery_shower, double state_shower, double pump_shower, double latitude, double longitude) {
+void pushData(double temp_shower, double temp_hot_shower, double temp_out_shower, double temp_pump, double flux_hot_pump, double flux_out_pump, double flux_pump, double battery_shower, int state_shower, int state_pump , double pump_shower, double latitude, double longitude) {
   DynamicJsonDocument data(198);
-    uint32_t chipId = 0;
+  uint32_t chipId = 0;
   for (int i = 0; i < 17; i = i + 8) {
     chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
   }
+  Serial.println("RECEIVED: ");
+  Serial.println("tempShower: " + (String)temp_shower);
   data["_id"]         = chipId ;
   data["device_name"]         = "HSC001";
   data["temp_shower"]          = temp_shower;
-  data["temp_hot_shower"]          = "15.4";
-  data["temp_out_shower"]          = "15.4";
-  data["temp_pump"]          = "35.4";
-  data["flux_hot_pump"]          = "15.4";
-  data["flux_out_pump"]          = "15.4";
-  data["flux_pump"]          = "15.4";
-  data["battery_shower"]          = "35.4";
-  data["state_shower"]          = "35.4";
-  data["state_pump"]          = "35.4";
-  data["latitude"]          = "35.4";
-  data["longitude"]          = "35.4";
+  data["temp_hot_shower"]          = temp_hot_shower;
+  data["temp_out_shower"]          = temp_out_shower;
+  data["temp_pump"]          = temp_pump;
+  data["flux_hot_pump"]          = flux_hot_pump;
+  data["flux_out_pump"]          = flux_out_pump;
+  data["flux_pump"]          = flux_pump;
+  data["battery_shower"]          = battery_shower;
+  data["state_shower"]          = state_shower;
+  data["state_pump"]          = state_pump;
+  data["latitude"]          = latitude;
+  data["longitude"]          = longitude;
+  
   String json_object;
-  Serial.println(json_object);
   serializeJsonPretty(data, json_object);
   publishTelemetry("/iotcore-topic", json_object);
-  Serial.println("Datos Pusheados");
+  Serial.println(".-Datos Pusheados-.");
 }
 bool publishState(String data) {
   return mqtt->publishState(data);
